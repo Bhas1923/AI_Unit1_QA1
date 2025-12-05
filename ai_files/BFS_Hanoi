@@ -1,0 +1,95 @@
+import java.util.*;
+
+public class BFS_Hanoi_Steps {
+
+    static class State {
+        List<Integer>[] pegs;
+        List<String> moves; // store moves
+
+        State(List<Integer>[] p, List<String> m) {
+            pegs = new ArrayList[3];
+            for (int i = 0; i < 3; i++)
+                pegs[i] = new ArrayList<>(p[i]);
+            moves = new ArrayList<>(m);
+        }
+
+        boolean isGoal() {
+            return pegs[0].isEmpty() && pegs[1].isEmpty() && pegs[2].equals(Arrays.asList(3,2,1));
+        }
+
+        List<State> getNextStates() {
+            List<State> res = new ArrayList<>();
+            for (int i = 0; i < 3; i++) {
+                if (pegs[i].isEmpty()) continue;
+                int disk = pegs[i].get(pegs[i].size() - 1);
+
+                for (int j = 0; j < 3; j++) {
+                    if (i == j) continue;
+                    if (pegs[j].isEmpty() || pegs[j].get(pegs[j].size() - 1) > disk) {
+                        List<Integer>[] newPegs = new ArrayList[3];
+                        for (int k = 0; k < 3; k++)
+                            newPegs[k] = new ArrayList<>(pegs[k]);
+
+                        newPegs[j].add(newPegs[i].remove(newPegs[i].size() - 1));
+
+                        List<String> newMoves = new ArrayList<>(moves);
+                        newMoves.add("Move disk " + disk + " from Peg " + (i+1) + " to Peg " + (j+1));
+
+                        res.add(new State(newPegs, newMoves));
+                    }
+                }
+            }
+            return res;
+        }
+
+        @Override
+        public int hashCode() {
+            return Arrays.deepHashCode(pegs);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return Arrays.deepEquals(pegs, ((State)o).pegs);
+        }
+    }
+
+    public static void main(String[] args) {
+
+        List<Integer>[] pegs = new ArrayList[3];
+        pegs[0] = new ArrayList<>(Arrays.asList(3,2,1));
+        pegs[1] = new ArrayList<>();
+        pegs[2] = new ArrayList<>();
+
+        State initial = new State(pegs, new ArrayList<>());
+
+        Queue<State> queue = new LinkedList<>();
+        Set<State> visited = new HashSet<>();
+
+        queue.add(initial);
+        visited.add(initial);
+
+        State goal = null;
+
+        while (!queue.isEmpty()) {
+            State cur = queue.poll();
+
+            if (cur.isGoal()) {
+                goal = cur;
+                break;
+            }
+
+            for (State nxt : cur.getNextStates()) {
+                if (!visited.contains(nxt)) {
+                    queue.add(nxt);
+                    visited.add(nxt);
+                }
+            }
+        }
+
+        System.out.println("BFS Solution Steps:");
+        for (String m : goal.moves) {
+            System.out.println(m);
+        }
+        System.out.println("Total moves: " + goal.moves.size());
+    }
+}
